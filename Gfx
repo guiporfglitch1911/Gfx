@@ -1,0 +1,699 @@
+--//====================================================
+--// FRX HUB - ONE SCRIPT
+--// Roblox Studio / Seu próprio jogo
+--//====================================================
+
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+--//====================================================
+--// CONFIG
+--//====================================================
+
+local Settings = {
+
+    -- COMBAT
+    AutoCombat = false,
+    CombatRange = 500,
+
+    UseFruit = true,
+    UseSword = true,
+    UseGun = true,
+    UseMelee = true,
+
+    -- FARM
+    AutoFarm = false,
+    FarmSpeed = 270,
+    MaxFarmSpeed = 270,
+
+    -- BOSSES
+    AutoEliteBoss = false,
+    AutoRipIndra = false,
+    AutoDoughKing = false,
+
+    -- SEA EVENTS
+    AutoSeaEvent = false,
+    AutoSeaBeast = false,
+    AutoShipEvent = false,
+    AutoLeviathan = false,
+
+    -- QUESTS
+    SecondSeaQuest = false,
+    ThirdSeaQuest = false,
+
+    -- BOAT
+    BoatSpeed = false,
+    BoatMaxSpeed = 250,
+
+    -- UI
+    UIAnimations = true,
+}
+
+--//====================================================
+--// COLORS
+--//====================================================
+
+local COLORS = {
+    Background = Color3.fromRGB(5, 11, 18),
+    Panel = Color3.fromRGB(8, 20, 31),
+    Panel2 = Color3.fromRGB(12, 29, 43),
+
+    Accent = Color3.fromRGB(0, 170, 255),
+    Accent2 = Color3.fromRGB(0, 225, 255),
+
+    Text = Color3.fromRGB(240, 250, 255),
+    SubText = Color3.fromRGB(135, 170, 190),
+
+    Off = Color3.fromRGB(48, 62, 72),
+    Danger = Color3.fromRGB(190, 55, 65),
+}
+
+--//====================================================
+--// GUI
+--//====================================================
+
+local gui = Instance.new("ScreenGui")
+gui.Name = "FRXHub"
+gui.ResetOnSpawn = false
+gui.IgnoreGuiInset = true
+gui.Parent = playerGui
+
+--//====================================================
+--// FUNCTIONS
+--//====================================================
+
+local function corner(obj, radius)
+    local c = Instance.new("UICorner")
+    c.CornerRadius = UDim.new(0, radius or 8)
+    c.Parent = obj
+end
+
+local function stroke(obj, color, thickness, transparency)
+    local s = Instance.new("UIStroke")
+    s.Color = color
+    s.Thickness = thickness or 1
+    s.Transparency = transparency or 0
+    s.Parent = obj
+end
+
+local function tween(obj, properties, duration)
+    if not Settings.UIAnimations then
+        for property, value in pairs(properties) do
+            obj[property] = value
+        end
+        return
+    end
+
+    TweenService:Create(
+        obj,
+        TweenInfo.new(
+            duration or 0.18,
+            Enum.EasingStyle.Quart,
+            Enum.EasingDirection.Out
+        ),
+        properties
+    ):Play()
+end
+
+--//====================================================
+--// FLOATING BUTTON
+--//====================================================
+
+local floating = Instance.new("TextButton")
+floating.Name = "FRXFloatingButton"
+floating.Size = UDim2.fromOffset(52, 52)
+floating.Position = UDim2.new(0, 18, 0.5, -26)
+floating.BackgroundColor3 = COLORS.Panel
+floating.Text = "FRX"
+floating.TextColor3 = COLORS.Accent2
+floating.TextSize = 15
+floating.Font = Enum.Font.GothamBold
+floating.AutoButtonColor = false
+floating.Parent = gui
+
+corner(floating, 16)
+stroke(floating, COLORS.Accent, 1.5, 0.25)
+
+--//====================================================
+--// MAIN
+--//====================================================
+
+local main = Instance.new("Frame")
+main.Name = "Main"
+main.Size = UDim2.fromOffset(520, 350)
+main.Position = UDim2.new(0.5, -260, 0.5, -175)
+main.BackgroundColor3 = COLORS.Background
+main.Visible = false
+main.Parent = gui
+
+corner(main, 13)
+stroke(main, COLORS.Accent, 1, 0.5)
+
+--//====================================================
+--// HEADER
+--//====================================================
+
+local header = Instance.new("Frame")
+header.Size = UDim2.new(1, 0, 0, 54)
+header.BackgroundColor3 = COLORS.Panel
+header.Parent = main
+
+corner(header, 13)
+
+local title = Instance.new("TextLabel")
+title.BackgroundTransparency = 1
+title.Position = UDim2.fromOffset(17, 6)
+title.Size = UDim2.fromOffset(250, 25)
+title.Font = Enum.Font.GothamBold
+title.Text = "FRX HUB"
+title.TextColor3 = COLORS.Accent2
+title.TextSize = 19
+title.TextXAlignment = Enum.TextXAlignment.Left
+title.Parent = header
+
+local subtitle = Instance.new("TextLabel")
+subtitle.BackgroundTransparency = 1
+subtitle.Position = UDim2.fromOffset(18, 29)
+subtitle.Size = UDim2.fromOffset(250, 18)
+subtitle.Font = Enum.Font.Gotham
+subtitle.Text = "Universal Game Hub"
+subtitle.TextColor3 = COLORS.SubText
+subtitle.TextSize = 10
+subtitle.TextXAlignment = Enum.TextXAlignment.Left
+subtitle.Parent = header
+
+local close = Instance.new("TextButton")
+close.Size = UDim2.fromOffset(32, 32)
+close.Position = UDim2.new(1, -42, 0, 11)
+close.BackgroundColor3 = COLORS.Panel2
+close.Text = "×"
+close.TextColor3 = COLORS.Text
+close.TextSize = 21
+close.Font = Enum.Font.GothamBold
+close.AutoButtonColor = false
+close.Parent = header
+
+corner(close, 8)
+
+close.MouseButton1Click:Connect(function()
+    main.Visible = false
+end)
+
+--//====================================================
+--// SIDEBAR
+--//====================================================
+
+local sidebar = Instance.new("Frame")
+sidebar.Position = UDim2.fromOffset(10, 64)
+sidebar.Size = UDim2.fromOffset(115, 276)
+sidebar.BackgroundColor3 = COLORS.Panel
+sidebar.Parent = main
+
+corner(sidebar, 10)
+
+local sideLayout = Instance.new("UIListLayout")
+sideLayout.Padding = UDim.new(0, 5)
+sideLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+sideLayout.SortOrder = Enum.SortOrder.LayoutOrder
+sideLayout.Parent = sidebar
+
+local sidePadding = Instance.new("UIPadding")
+sidePadding.PaddingTop = UDim.new(0, 8)
+sidePadding.PaddingLeft = UDim.new(0, 7)
+sidePadding.PaddingRight = UDim.new(0, 7)
+sidePadding.Parent = sidebar
+
+--//====================================================
+--// CONTENT
+--//====================================================
+
+local content = Instance.new("Frame")
+content.Position = UDim2.fromOffset(135, 64)
+content.Size = UDim2.new(1, -145, 1, -74)
+content.BackgroundColor3 = COLORS.Panel
+content.Parent = main
+
+corner(content, 10)
+
+local pages = {}
+
+local function createPage(name)
+    local page = Instance.new("ScrollingFrame")
+
+    page.Name = name
+    page.Size = UDim2.new(1, -16, 1, -16)
+    page.Position = UDim2.fromOffset(8, 8)
+    page.BackgroundTransparency = 1
+    page.BorderSizePixel = 0
+    page.ScrollBarThickness = 2
+    page.ScrollBarImageColor3 = COLORS.Accent
+    page.Visible = false
+    page.Parent = content
+
+    local layout = Instance.new("UIListLayout")
+    layout.Padding = UDim.new(0, 7)
+    layout.SortOrder = Enum.SortOrder.LayoutOrder
+    layout.Parent = page
+
+    layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        page.CanvasSize = UDim2.fromOffset(
+            0,
+            layout.AbsoluteContentSize.Y + 12
+        )
+    end)
+
+    pages[name] = page
+
+    return page
+end
+
+--//====================================================
+--// BUTTON
+--//====================================================
+
+local function createButton(parent, text, callback)
+
+    local button = Instance.new("TextButton")
+
+    button.Size = UDim2.new(1, -4, 0, 38)
+    button.BackgroundColor3 = COLORS.Panel2
+    button.Text = text
+    button.TextColor3 = COLORS.Text
+    button.TextSize = 12
+    button.Font = Enum.Font.GothamMedium
+    button.AutoButtonColor = false
+    button.Parent = parent
+
+    corner(button, 7)
+
+    button.MouseEnter:Connect(function()
+        tween(button, {
+            BackgroundColor3 = Color3.fromRGB(16, 45, 64)
+        })
+    end)
+
+    button.MouseLeave:Connect(function()
+        tween(button, {
+            BackgroundColor3 = COLORS.Panel2
+        })
+    end)
+
+    button.MouseButton1Click:Connect(function()
+        if callback then
+            callback()
+        end
+    end)
+
+    return button
+end
+
+--//====================================================
+--// TOGGLE
+--//====================================================
+
+local function createToggle(parent, text, default, callback)
+
+    local holder = Instance.new("Frame")
+
+    holder.Size = UDim2.new(1, -4, 0, 42)
+    holder.BackgroundColor3 = COLORS.Panel2
+    holder.Parent = parent
+
+    corner(holder, 7)
+
+    local label = Instance.new("TextLabel")
+
+    label.BackgroundTransparency = 1
+    label.Position = UDim2.fromOffset(11, 0)
+    label.Size = UDim2.new(1, -62, 1, 0)
+    label.Font = Enum.Font.GothamMedium
+    label.Text = text
+    label.TextColor3 = COLORS.Text
+    label.TextSize = 11
+    label.TextXAlignment = Enum.TextXAlignment.Left
+    label.Parent = holder
+
+    local toggle = Instance.new("TextButton")
+
+    toggle.Size = UDim2.fromOffset(36, 19)
+    toggle.Position = UDim2.new(1, -47, 0.5, -9)
+    toggle.BackgroundColor3 =
+        default and COLORS.Accent or COLORS.Off
+
+    toggle.Text = ""
+    toggle.AutoButtonColor = false
+    toggle.Parent = holder
+
+    corner(toggle, 20)
+
+    local dot = Instance.new("Frame")
+
+    dot.Size = UDim2.fromOffset(15, 15)
+
+    dot.Position = default
+        and UDim2.new(1, -18, 0.5, -7)
+        or UDim2.fromOffset(2, 2)
+
+    dot.BackgroundColor3 = Color3.new(1, 1, 1)
+    dot.Parent = toggle
+
+    corner(dot, 20)
+
+    local state = default
+
+    toggle.MouseButton1Click:Connect(function()
+
+        state = not state
+
+        tween(toggle, {
+            BackgroundColor3 =
+                state and COLORS.Accent or COLORS.Off
+        })
+
+        tween(dot, {
+            Position = state
+                and UDim2.new(1, -18, 0.5, -7)
+                or UDim2.fromOffset(2, 2)
+        })
+
+        if callback then
+            callback(state)
+        end
+
+    end)
+
+    return holder
+end
+
+--//====================================================
+--// PAGES
+--//====================================================
+
+local combat = createPage("Combat")
+local fruit = createPage("Fruit")
+local farm = createPage("Farm")
+local bosses = createPage("Bosses")
+local sea = createPage("Sea")
+local quests = createPage("Quests")
+local boat = createPage("Boat")
+local config = createPage("Settings")
+
+--//====================================================
+--// COMBAT
+--//====================================================
+
+createToggle(combat, "Auto Combat", false, function(value)
+    Settings.AutoCombat = value
+end)
+
+createToggle(combat, "Fruit Skills", true, function(value)
+    Settings.UseFruit = value
+end)
+
+createToggle(combat, "Sword Skills", true, function(value)
+    Settings.UseSword = value
+end)
+
+createToggle(combat, "Gun Skills", true, function(value)
+    Settings.UseGun = value
+end)
+
+createToggle(combat, "Melee Skills", true, function(value)
+    Settings.UseMelee = value
+end)
+
+createButton(combat, "Combat Area: 500", function()
+    Settings.CombatRange = 500
+    print("Combat Range:", Settings.CombatRange)
+end)
+
+--//====================================================
+--// FRUIT
+--//====================================================
+
+createToggle(fruit, "Auto Fruit", false, function(value)
+    Settings.AutoFruit = value
+end)
+
+createButton(fruit, "Collect Nearby Fruit", function()
+    print("FRX: coleta de fruta do seu jogo.")
+end)
+
+--//====================================================
+--// FARM
+--//====================================================
+
+createToggle(farm, "Auto Farm", false, function(value)
+    Settings.AutoFarm = value
+end)
+
+createButton(farm, "Farm Speed: 270", function()
+    Settings.FarmSpeed = Settings.MaxFarmSpeed
+    print("Farm Speed:", Settings.FarmSpeed)
+end)
+
+createButton(farm, "Farm Area: 500", function()
+    Settings.CombatRange = 500
+    print("Farm Area:", Settings.CombatRange)
+end)
+
+--//====================================================
+--// BOSSES
+--//====================================================
+
+createToggle(bosses, "Auto Elite Boss", false, function(value)
+    Settings.AutoEliteBoss = value
+end)
+
+createToggle(bosses, "Auto Rip Indra", false, function(value)
+    Settings.AutoRipIndra = value
+end)
+
+createToggle(bosses, "Auto Dough King", false, function(value)
+    Settings.AutoDoughKing = value
+end)
+
+--//====================================================
+--// SEA EVENTS
+--//====================================================
+
+createToggle(sea, "Auto Sea Event", false, function(value)
+    Settings.AutoSeaEvent = value
+end)
+
+createToggle(sea, "Auto Sea Beast", false, function(value)
+    Settings.AutoSeaBeast = value
+end)
+
+createToggle(sea, "Auto Ship Event", false, function(value)
+    Settings.AutoShipEvent = value
+end)
+
+createToggle(sea, "Auto Leviathan", false, function(value)
+    Settings.AutoLeviathan = value
+end)
+
+--//====================================================
+--// QUESTS
+--//====================================================
+
+createToggle(quests, "Second Sea Quest", false, function(value)
+    Settings.SecondSeaQuest = value
+end)
+
+createToggle(quests, "Third Sea Quest", false, function(value)
+    Settings.ThirdSeaQuest = value
+end)
+
+--//====================================================
+--// BOAT
+--//====================================================
+
+createToggle(boat, "Boat Speed", false, function(value)
+    Settings.BoatSpeed = value
+end)
+
+createButton(boat, "Boat Speed: 250", function()
+    Settings.BoatMaxSpeed = 250
+    print("Boat Max Speed:", Settings.BoatMaxSpeed)
+end)
+
+--//====================================================
+--// SETTINGS
+--//====================================================
+
+createToggle(config, "UI Animations", true, function(value)
+    Settings.UIAnimations = value
+end)
+
+createButton(config, "Reset Settings", function()
+
+    Settings.AutoCombat = false
+    Settings.AutoFarm = false
+    Settings.AutoFruit = false
+    Settings.AutoSeaEvent = false
+
+    Settings.AutoEliteBoss = false
+    Settings.AutoRipIndra = false
+    Settings.AutoDoughKing = false
+
+    Settings.SecondSeaQuest = false
+    Settings.ThirdSeaQuest = false
+
+    Settings.BoatSpeed = false
+
+    Settings.CombatRange = 500
+    Settings.FarmSpeed = 270
+    Settings.BoatMaxSpeed = 250
+
+    print("FRX: configurações resetadas.")
+
+end)
+
+--//====================================================
+--// NAVIGATION
+--//====================================================
+
+local names = {
+    "Combat",
+    "Fruit",
+    "Farm",
+    "Bosses",
+    "Sea",
+    "Quests",
+    "Boat",
+    "Settings"
+}
+
+local sideButtons = {}
+local currentPage
+
+local function selectPage(name, button)
+
+    if currentPage then
+        currentPage.Visible = false
+    end
+
+    currentPage = pages[name]
+    currentPage.Visible = true
+
+    for _, child in ipairs(sidebar:GetChildren()) do
+        if child:IsA("TextButton") then
+            tween(child, {
+                BackgroundColor3 = COLORS.Panel2
+            })
+        end
+    end
+
+    tween(button, {
+        BackgroundColor3 = COLORS.Accent
+    })
+
+end
+
+for _, name in ipairs(names) do
+
+    local button = createButton(
+        sidebar,
+        name,
+        function()
+            selectPage(name, button)
+        end
+    )
+
+    sideButtons[name] = button
+
+end
+
+selectPage("Combat", sideButtons.Combat)
+
+--//====================================================
+--// OPEN / CLOSE
+--//====================================================
+
+floating.MouseButton1Click:Connect(function()
+    main.Visible = not main.Visible
+end)
+
+--//====================================================
+--// DRAGGING
+--//====================================================
+
+local dragging = false
+local dragStart
+local startPosition
+
+header.InputBegan:Connect(function(input)
+
+    if input.UserInputType == Enum.UserInputType.MouseButton1
+        or input.UserInputType == Enum.UserInputType.Touch then
+
+        dragging = true
+        dragStart = input.Position
+        startPosition = main.Position
+
+    end
+
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+
+    if not dragging then
+        return
+    end
+
+    if input.UserInputType == Enum.UserInputType.MouseMovement
+        or input.UserInputType == Enum.UserInputType.Touch then
+
+        local delta = input.Position - dragStart
+
+        main.Position = UDim2.new(
+            startPosition.X.Scale,
+            startPosition.X.Offset + delta.X,
+            startPosition.Y.Scale,
+            startPosition.Y.Offset + delta.Y
+        )
+
+    end
+
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+
+    if input.UserInputType == Enum.UserInputType.MouseButton1
+        or input.UserInputType == Enum.UserInputType.Touch then
+
+        dragging = false
+
+    end
+
+end)
+
+--//====================================================
+--// FLOATING BUTTON EFFECT
+--//====================================================
+
+floating.MouseEnter:Connect(function()
+    tween(floating, {
+        BackgroundColor3 = Color3.fromRGB(12, 40, 58)
+    })
+end)
+
+floating.MouseLeave:Connect(function()
+    tween(floating, {
+        BackgroundColor3 = COLORS.Panel
+    })
+end)
+
+--//====================================================
+--// START
+--//====================================================
+
+print("FRX HUB carregado.")
+print("Combat Range:", Settings.CombatRange)
+print("Farm Speed:", Settings.FarmSpeed)
+print("Boat Max Speed:", Settings.BoatMaxSpeed)
