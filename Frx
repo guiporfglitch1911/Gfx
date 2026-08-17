@@ -1,0 +1,105 @@
+--//====================================================
+--// FRX HUB - SCRIPT FINAL COMPLETO
+--//====================================================
+
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+--// CONFIGURAÇÕES //--
+local Settings = {
+    AutoFarm = false, AutoFarmLevel = false, AutoChest = false, AutoBerry = false,
+    AutoEliteBoss = false, AutoRipIndra = false, AutoDoughKing = false, AutoDarkBeard = false, AutoGreyBeard = false,
+    AutoSeaEvent = false, BoatSpeed = false,
+    UIAnimations = true,
+}
+
+local COLORS = {
+    Background = Color3.fromRGB(5, 11, 18), Panel = Color3.fromRGB(8, 20, 31),
+    Panel2 = Color3.fromRGB(12, 29, 43), Accent = Color3.fromRGB(0, 170, 255),
+    Accent2 = Color3.fromRGB(0, 225, 255), Text = Color3.fromRGB(240, 250, 255),
+    SubText = Color3.fromRGB(135, 170, 190), Off = Color3.fromRGB(48, 62, 72),
+}
+
+--// FUNÇÕES UTILS //--
+local function corner(obj, r) local c = Instance.new("UICorner"); c.CornerRadius = UDim.new(0, r or 8); c.Parent = obj end
+local function stroke(obj, color) local s = Instance.new("UIStroke"); s.Color = color; s.Thickness = 1.5; s.Parent = obj end
+local function tween(obj, props) TweenService:Create(obj, TweenInfo.new(0.2, Enum.EasingStyle.Quart), props):Play() end
+
+--// GUI SETUP //--
+local gui = Instance.new("ScreenGui", playerGui); gui.Name = "FRXHub"; gui.ResetOnSpawn = false
+
+-- Botão Flutuante (Imagem)
+local floating = Instance.new("ImageButton", gui)
+floating.Size = UDim2.fromOffset(50, 50); floating.Position = UDim2.new(0, 20, 0.5, -25)
+floating.BackgroundColor3 = COLORS.Panel; floating.Image = "rbxassetid://123456789" -- COLOQUE O ID AQUI
+corner(floating, 16); stroke(floating, COLORS.Accent)
+
+-- Janela Principal
+local main = Instance.new("Frame", gui)
+main.Name = "FRX_Main_GUI"
+main.Size = UDim2.fromOffset(520, 350); main.Position = UDim2.new(0.5, -260, 0.5, -175)
+main.BackgroundColor3 = COLORS.Background; main.Visible = false
+corner(main, 13); stroke(main, COLORS.Accent)
+
+-- Header (Fechar e Arrastar)
+local header = Instance.new("Frame", main); header.Size = UDim2.new(1, 0, 0, 40); header.BackgroundColor3 = COLORS.Panel; corner(header, 13)
+local close = Instance.new("TextButton", header); close.Size = UDim2.fromOffset(30, 30); close.Position = UDim2.new(1, -35, 0, 5); close.Text = "X"; close.Parent = header
+close.MouseButton1Click:Connect(function() main.Visible = false end)
+
+-- Sistema de Abas
+local sidebar = Instance.new("Frame", main); sidebar.Size = UDim2.fromOffset(120, 280); sidebar.Position = UDim2.fromOffset(10, 50); sidebar.BackgroundColor3 = COLORS.Panel; corner(sidebar, 10)
+local content = Instance.new("Frame", main); content.Size = UDim2.new(1, -150, 1, -70); content.Position = UDim2.fromOffset(140, 50); content.BackgroundColor3 = COLORS.Panel; corner(content, 10)
+Instance.new("UIListLayout", sidebar).Padding = UDim.new(0, 5)
+
+local pages = {}
+local function createPage(name)
+    local btn = Instance.new("TextButton", sidebar); btn.Text = name; btn.Size = UDim2.new(1, -10, 0, 30); btn.BackgroundColor3 = COLORS.Panel2; corner(btn, 5)
+    local page = Instance.new("ScrollingFrame", content); page.Name = name; page.Size = UDim2.new(1, 0, 1, 0); page.BackgroundTransparency = 1; page.Visible = false; Instance.new("UIListLayout", page)
+    btn.MouseButton1Click:Connect(function() for _, p in pairs(content:GetChildren()) do if p:IsA("ScrollingFrame") then p.Visible = false end end; page.Visible = true end)
+    pages[name] = page
+    return page
+end
+
+local farmPage = createPage("Farm")
+local bossPage = createPage("Bosses")
+local seaPage = createPage("Sea")
+
+-- Toggle Criador
+local function createToggle(parent, text, settingKey)
+    local t = Instance.new("TextButton", parent); t.Size = UDim2.new(1, 0, 0, 30); t.Text = text; t.BackgroundColor3 = COLORS.Off; corner(t, 5)
+    t.MouseButton1Click:Connect(function()
+        Settings[settingKey] = not Settings[settingKey]
+        t.BackgroundColor3 = Settings[settingKey] and COLORS.Accent or COLORS.Off
+    end)
+end
+
+-- Adicionando os Toggles
+createToggle(farmPage, "Auto Farm", "AutoFarm"); createToggle(farmPage, "Farm Level", "AutoFarmLevel")
+createToggle(farmPage, "Auto Chest", "AutoChest"); createToggle(farmPage, "Auto Berry", "AutoBerry")
+
+createToggle(bossPage, "Elite Boss", "AutoEliteBoss"); createToggle(bossPage, "Rip Indra", "AutoRipIndra")
+createToggle(bossPage, "Dough King", "AutoDoughKing"); createToggle(bossPage, "Dark Beard", "AutoDarkBeard"); createToggle(bossPage, "Grey Beard", "AutoGreyBeard")
+
+createToggle(seaPage, "Sea Events", "AutoSeaEvent"); createToggle(seaPage, "Boat Speed", "BoatSpeed")
+
+-- Lógica de Arrastar
+local drag = false; local offset; header.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then drag = true; offset = i.Position - main.Position end end)
+UserInputService.InputChanged:Connect(function(i) if drag and i.UserInputType == Enum.UserInputType.MouseMovement then main.Position = UDim2.new(0, i.Position.X - offset.X, 0, i.Position.Y - offset.Y) end end)
+UserInputService.InputEnded:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then drag = false end end)
+floating.MouseButton1Click:Connect(function() main.Visible = not main.Visible end)
+
+--// LOOP DE LOGICA //--
+task.spawn(function()
+    while task.wait(0.5) do
+        -- Adicione aqui a chamada para suas pastas (ex: workspace.Enemies, workspace.Chests, etc)
+        if Settings.AutoFarm then print("Farmando...") end
+        if Settings.AutoChest then print("Coletando Baús...") end
+        if Settings.AutoDarkBeard then print("Buscando Dark Beard...") end
+    end
+end)
+
